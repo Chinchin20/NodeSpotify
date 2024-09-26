@@ -1,0 +1,36 @@
+<!-- views/upload.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/styles.css">
+    <title>Upload Song</title>
+</head>
+<body>
+    <div class="container">
+        <h1>Upload Song</h1>
+        <form action="/upload" method="POST" enctype="multipart/form-data" class="upload-form">
+         
+            <div class="form-group">
+                <label for="songName">Song Name:</label>
+                <input type="text" name="songName" required>
+            </div>
+            <div class="form-group">
+                <label for="artistName">Artist Name:</label>
+                <input type="text" name="artistName" required>
+            </div>
+            <div class="form-group">
+                <label for="songFile">Select Song File:</label>
+                <input type="file" name="songFile" accept="audio/*" required>
+            </div>
+            <div class="form-group">
+                <label for="coverFile">Select Cover Image:</label>
+                <input type="file" name="coverFile" accept="image/*" required>
+            </div>
+            <button type="submit" class="submit-btn">Upload</button>
+        </form>
+        <a href="/" class="back-link">Back to Music Player</a>
+    </div>
+</body>
+</html>

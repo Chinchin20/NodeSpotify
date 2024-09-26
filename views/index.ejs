@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/styles.css">
+    <title>SPOTIFY</title>
+</head>
+<body>
+    <div class="container">
+        <h1>Spotify Playlist</h1>
+
+        <div class="songs-container">
+            <% songs.forEach((song, index) => { %>
+                <div class="song" data-index="<%= index %>">
+                    <div class="cover-container">
+                        <img src="/<%= song.cover_path.replace('uploads/', '') %>" alt="Cover Image" class="cover-image">
+                    </div>
+                    <div class="song-info">
+                        <h2><%= song.name %> - <%= song.artist %></h2>
+                        <audio controls class="audio-player" id="audio-<%= index %>">
+                            <source src="/<%= song.file_path.replace('uploads/', '') %>" type="audio/mpeg">
+                            Your browser does not support the audio element.
+                        </audio>
+                        <span class="favorite-heart" data-index="<%= index %>" title="Add to Favorites">❤️</span> <!-- Heart icon for favorites -->
+                    </div>
+                </div>
+            <% }) %>
+
+            <!-- Navigation buttons inside the songs container -->
+            <div class="nav-buttons">
+                <button class="nav-button" id="scrollLeftButton">❮</button>
+                <button class="nav-button" id="scrollRightButton">❯</button>
+            </div>
+        </div>
+
+        <h2>Favorites</h2>
+        <div class="favorites-container" id="favoritesList"></div> <!-- Favorites list here -->
+    </div>
+
+    <script>
+        const songs = <%- JSON.stringify(songs) %>; 
+        let currentSongIndex = 1; // Start with the middle song displayed (index 1, assuming 3 are displayed)
+        const favorites = []; // Array to store favorite songs
+
+        function updateVisibleSongs() {
+            const songElements = document.querySelectorAll('.song');
+            songElements.forEach((songElement, index) => {
+                const diff = Math.abs(currentSongIndex - index);
+                if (diff > 1) {
+                    songElement.style.display = 'none'; // Hide songs that are more than 1 away from the center
+                } else {
+                    songElement.style.display = 'block';
+                    songElement.classList.toggle('active', index === currentSongIndex); // Highlight the center song
+                }
+            });
+        }
+
+        function playCurrentSong() {
+            const audioElements = document.querySelectorAll('audio');
+            audioElements.forEach((audio, index) => {
+                if (index === currentSongIndex) {
+                    audio.play();
+                } else {
+                    audio.pause();
+                    audio.currentTime = 0;
+                }
+            });
+        }
+
+        // Add to Favorites (heart click event)
+        document.querySelectorAll('.favorite-heart').forEach(heart => {
+            heart.addEventListener('click', (event) => {
+                const songIndex = event.target.getAttribute('data-index');
+                const song = songs[songIndex];
+
+                // Check if the song is already in favorites
+                const songInFavorites = favorites.find(fav => fav.index === songIndex);
+
+                if (!songInFavorites) {
+                    favorites.push({ ...song, index: songIndex }); // Add song to favorites with its index
+                    renderFavorites(); // Update favorites display
+                    event.target.textContent = '❤️'; // Heart icon shows as filled
+                    event.target.style.cursor = 'default'; // Change cursor to default
+                }
+            });
+        });
+
+        // Function to render favorites
+        function renderFavorites() {
+            const favoritesList = document.getElementById('favoritesList');
+            favoritesList.innerHTML = ''; // Clear the current list
+
+            favorites.forEach((favorite, index) => {
+                const favoriteItem = document.createElement('div');
+                favoriteItem.textContent = `${favorite.name} - ${favorite.artist}`;
+
+                // Create undo link for each favorite
+                const undoLink = document.createElement('span');
+                undoLink.textContent = ' Undo';
+                undoLink.style.color = 'blue';
+                undoLink.style.cursor = 'pointer';
+                undoLink.onclick = () => {
+                    favorites.splice(index, 1); // Remove song from favorites
+                    renderFavorites(); // Update favorites display
+                    document.querySelector(`.favorite-heart[data-index="${favorite.index}"]`).textContent = '❤️'; // Reset heart icon
+                };
+
+                favoriteItem.appendChild(undoLink);
+                favoritesList.appendChild(favoriteItem);
+            });
+        }
+
+        // Navigate left in the playlist
+        document.getElementById('scrollLeftButton').addEventListener('click', () => {
+            currentSongIndex = (currentSongIndex > 0) ? currentSongIndex - 1 : songs.length - 1;
+            updateVisibleSongs();
+            playCurrentSong();
+        });
+
+        // Navigate right in the playlist
+        document.getElementById('scrollRightButton').addEventListener('click', () => {
+            currentSongIndex = (currentSongIndex < songs.length - 1) ? currentSongIndex + 1 : 0;
+            updateVisibleSongs();
+            playCurrentSong();
+        });
+
+        window.onload = () => {
+            updateVisibleSongs();
+            playCurrentSong();
+        };
+    </script>
+</body>
+</html>
